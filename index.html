@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<!--
+  Lin's EDC Calculator
+  Copyright (c) 2026 Weiping Lin, D.O., FACOG, FACOOG (Holy Name Medical Center, OB/GYN). Wlin@holyname.org
+  Licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+  https://creativecommons.org/licenses/by/4.0/
+  You may share and adapt this work, including commercially, with attribution to
+  Weiping Lin, D.O., a link to the license, and an indication of any changes made.
+  Artwork (icons, avatar, photo) is not covered by this license and is included for use with this app only.
+  This notice must be kept in all copies or adaptations, including code pasted into AI tools.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#f4f8fc" />
+<meta name="description" content="Lin's EDC Calculator: due dates, ACOG redating, and gestational age." />
+<meta name="author" content="Weiping Lin, D.O., FACOG, FACOOG" />
+<meta name="copyright" content="© 2026 Weiping Lin, D.O. Licensed CC BY 4.0" />
+<link rel="license" href="https://creativecommons.org/licenses/by/4.0/" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Lin's EDC" />
+<title>Lin's EDC Calculator</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-v4.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32-v4.png" />
+<link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64-v4.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f8fc; --paper:#fff; --paper-2:#f6f9fc; --ink:#16294a; --muted:#566783; --faint:#8b98ad;
+  --navy:#1c3a64; --teal:#23898c; --pink:#c4506f; --line:rgba(28,58,100,.13); --line-strong:rgba(28,58,100,.28);
+  --warn:#b4541e; --warn-bg:#fdf0e6; --ok:#2e8a57; --ok-bg:#e5f5ec; --info-bg:#e6f0fa;
+  --t1:#c4506f; --t2:#7a5bbf; --t3:#2c6fa8;
+  --radius:16px; --shadow:0 14px 40px rgba(28,58,100,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button,select,label{cursor:pointer}
+:focus-visible{outline:2.5px solid var(--teal);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+
+header.wrap{padding-top:18px;padding-bottom:4px}
+.mast{display:flex;align-items:center;gap:16px}
+.lin{width:clamp(76px,14vw,104px);height:clamp(76px,14vw,104px);border-radius:50%;flex:none;border:3px solid #fff;box-shadow:0 8px 24px rgba(28,58,100,.28)}
+.mast .t{flex:1;min-width:0}
+.mast h1{margin:0;font-size:clamp(1.45rem,4.6vw,2.1rem);font-weight:800;color:var(--navy);line-height:1.1}
+.mast p{margin:4px 0 0;color:var(--teal);font-weight:700;font-size:clamp(.9rem,2.6vw,1.02rem)}
+.mast p span{display:block;color:var(--muted);font-weight:600;font-size:.84rem;margin-top:2px}
+.ibtn{width:44px;height:44px;border-radius:50%;flex:none;align-self:flex-start;border:1.5px solid var(--line-strong);background:#fff;display:grid;place-items:center;color:var(--navy)}
+.ibtn svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+/* about */
+#about{border:0;border-radius:18px;padding:0;width:min(600px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:var(--shadow);color:var(--ink)}
+#about::backdrop{background:rgba(12,24,44,.5)}
+#about .in{padding:22px 22px 18px;position:relative;line-height:1.5;font-size:.93rem}
+#about h2{margin:0 0 2px;font-size:1.3rem;color:var(--teal)}
+#about h3{margin:18px 0 6px;font-size:.98rem;color:var(--teal)}
+#about p{margin:6px 0}
+#about a{color:var(--teal)}
+#about ol,#about ul{padding-left:20px;margin:6px 0}
+#about li{margin:4px 0}
+#about .who{display:flex;align-items:center;gap:14px;margin-top:12px}
+#about .photo{width:96px;height:96px;border-radius:50%;flex:none;border:3px solid var(--teal);object-fit:cover}
+#about .close{position:absolute;top:10px;right:12px;background:none;border:0;font-size:1.7rem;line-height:1;color:var(--muted)}
+/* typed-or-calendar date field */
+.upd{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);z-index:120;background:var(--navy);color:#fff;border-radius:12px;padding:9px 10px 9px 16px;display:flex;align-items:center;gap:12px;font-weight:600;font-size:.9rem;box-shadow:var(--shadow)}
+.upd span{white-space:nowrap}
+.upd button{border:0;border-radius:9px;padding:7px 12px;font-weight:800;background:var(--teal);color:#fff}
+.rep-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.rep-actions .btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;font-size:.95rem}
+.rep-actions svg,.rdlg .acts svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#repDlg{border:0;border-radius:18px;padding:0;width:min(640px,calc(100vw - 16px));max-height:calc(100dvh - 20px);box-shadow:var(--shadow);color:var(--ink)}
+#repDlg::backdrop{background:rgba(12,24,44,.5)}
+.rdlg{padding:18px;display:flex;flex-direction:column;gap:12px;position:relative}
+.rdlg h2{margin:0;font-size:1.2rem;color:var(--navy)}
+.rdlg .close{position:absolute;top:10px;right:12px;background:none;border:0;font-size:1.7rem;line-height:1;color:var(--muted)}
+.rdlg .kinds{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rdlg .kinds button{border:1.5px solid var(--line-strong);background:#fff;border-radius:12px;padding:10px 12px;text-align:left;font-weight:700;color:var(--ink)}
+.rdlg .kinds button small{display:block;font-weight:500;color:var(--muted);font-size:.78rem;margin-top:2px}
+.rdlg .kinds button.on{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 8%,#fff);box-shadow:inset 0 0 0 1px var(--teal)}
+.rprev{border:1px solid var(--line);border-radius:12px;background:var(--paper-2);max-height:42dvh;overflow:auto;padding:12px 14px;font-size:.88rem}
+.rprev pre{margin:0;white-space:pre-wrap;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86rem}
+.rdlg .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rdlg .acts .btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;font-size:.84rem}
+.rdlg .acts .btn.email{background:var(--teal);border-color:var(--teal);color:#fff}
+.rdlg .hint2{font-size:.78rem;color:var(--muted);margin:0}
+@media (max-width:520px){ .rdlg .acts{grid-template-columns:1fr 1fr} }
+.dt{display:flex;gap:6px;align-items:stretch}
+.dt .dt-txt{flex:1}
+.dt-txt::placeholder{color:var(--faint);font-weight:500}
+.dt-cal{position:relative;flex:none;width:50px}
+.dt-cal button{width:100%;height:100%;border:1px solid var(--line-strong);background:var(--paper-2);border-radius:11px;display:grid;place-items:center;color:var(--navy);padding:0}
+.dt-cal svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.field .dt-cal input.dt-native{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;cursor:pointer;min-width:0}
+.dt-msg{font-size:.78rem;font-weight:600;color:var(--warn);min-height:0}
+.dt-bad .dt-txt{border-color:var(--warn)!important;background:#fff8f2!important}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;margin-top:16px;align-items:start}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.tabs button{border:0;background:transparent;padding:9px 4px;border-radius:9px;font-weight:700;font-size:.88rem;color:var(--muted);line-height:1.15}
+.tabs button[aria-selected=true]{background:var(--navy);color:#fff}
+.pane{margin-top:14px;display:flex;flex-direction:column;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:.84rem;font-weight:700;color:var(--muted)}
+.field input,.field select{border:1px solid var(--line-strong);background:#fff;border-radius:11px;padding:11px 12px;font-size:1.02rem;font-weight:600;color:var(--ink);width:100%;min-width:0}
+.field .hint{font-weight:500;font-size:.78rem;color:var(--faint)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;border:1px solid var(--line-strong);border-radius:11px;overflow:hidden;background:#fff}
+.seg button{flex:1;border:0;background:transparent;padding:10px 8px;font-weight:700;font-size:.9rem;color:var(--muted)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button.on{background:var(--teal);color:#fff}
+.quick{display:flex;gap:6px;flex-wrap:wrap}
+.quick button{border:1px solid var(--line-strong);background:#fff;border-radius:99px;padding:5px 11px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.opt{border-top:1px dashed var(--line-strong);padding-top:12px}
+.opt summary{font-weight:700;font-size:.9rem;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
+.opt summary::-webkit-details-marker{display:none}
+.opt summary::before{content:"+";display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:var(--paper-2);border:1px solid var(--line);font-size:.9rem}
+.opt.sono{border:2px solid var(--teal);border-radius:14px;padding:12px 14px;background:color-mix(in srgb,var(--teal) 6%,#fff)}
+.opt.sono summary{font-size:1.02rem;color:var(--teal)}
+.opt.sono summary::before{background:var(--teal);color:#fff;border-color:var(--teal);width:24px;height:24px;font-size:1.1rem}
+.opt.sono summary small{display:block;font-weight:600;font-size:.78rem;color:var(--muted)}
+/* final EDC + comparison */
+.final-chip{display:inline-block;margin-top:8px;font-size:.8rem;font-weight:800;padding:5px 12px;border-radius:99px;background:#fff;color:var(--navy)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.cmp div{border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;background:#fff}
+.cmp div.use{border-color:var(--navy);box-shadow:inset 0 0 0 1px var(--navy)}
+.cmp small{display:block;font-size:.74rem;font-weight:700;color:var(--muted)}
+.cmp b{font-size:1.05rem}
+.cmp em{display:block;font-style:normal;font-size:.72rem;font-weight:800;color:var(--navy);margin-top:2px}
+.thr{width:100%;border-collapse:collapse;margin-top:10px;font-size:.8rem;background:#fff;border-radius:10px;overflow:hidden}
+.thr th,.thr td{border:1px solid var(--line);padding:5px 8px;text-align:left}
+.thr th{background:var(--paper-2);font-weight:700}
+.thr tr.hit td{background:#fff3d6;font-weight:800}
+.cite{margin-top:10px;font-size:.78rem;color:var(--muted);border-left:3px solid var(--teal);padding:4px 0 4px 10px}
+.cite a{color:var(--teal);font-weight:700}
+.opt[open] summary::before{content:"–"}
+.opt .inner{margin-top:12px;display:flex;flex-direction:column;gap:12px}
+.note{font-size:.8rem;color:var(--muted);margin:0}
+
+/* results */
+.res-empty{text-align:center;color:var(--muted);padding:34px 14px;border:1.5px dashed var(--line-strong);border-radius:var(--radius);background:var(--paper)}
+.hero{background:linear-gradient(150deg,#1c3a64,#23498a);color:#fff;border-radius:var(--radius);padding:18px 18px 16px;position:relative;overflow:hidden}
+.hero .lbl{font-size:.8rem;font-weight:700;opacity:.8}
+.hero .edc{font-size:clamp(1.9rem,6vw,2.5rem);font-weight:800;line-height:1.05;margin:2px 0 4px}
+.hero .by{font-size:.86rem;opacity:.85}
+.ga{display:flex;align-items:baseline;gap:10px;margin-top:14px;flex-wrap:wrap}
+.ga b{font-size:2.2rem;font-weight:800;line-height:1}
+.ga span{font-size:.9rem;opacity:.85}
+.tri{display:inline-block;margin-top:10px;font-size:.78rem;font-weight:800;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.16)}
+.bar{margin-top:14px;height:10px;border-radius:99px;background:rgba(255,255,255,.18);position:relative;overflow:visible}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,#f29ab2,#bda5ef,#8cc0ee)}
+.bar .tk{position:absolute;top:-3px;width:2px;height:16px;background:rgba(255,255,255,.55)}
+.bar-lbl{display:flex;justify-content:space-between;font-size:.7rem;opacity:.75;margin-top:6px}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.fact{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.fact small{display:block;font-size:.76rem;color:var(--muted);font-weight:700}
+.fact b{font-size:1rem;font-weight:800}
+.verdict{margin-top:12px;border-radius:12px;padding:12px 14px;font-size:.9rem;border:1px solid var(--line)}
+.verdict.ok{background:var(--ok-bg);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.verdict.redate{background:var(--warn-bg);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.verdict.info{background:var(--info-bg)}
+.verdict h3{margin:0 0 4px;font-size:.98rem}
+.verdict p{margin:0}
+.warns{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.warn{background:var(--warn-bg);color:var(--warn);font-weight:600;font-size:.84rem;border-radius:10px;padding:8px 12px}
+.sec-h{margin:18px 0 8px;font-size:1rem;color:var(--navy);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ms{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.m{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 12px;border-top:1px solid var(--line);font-size:.9rem}
+.m:first-child{border-top:0}
+.m i{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.m small{display:block;color:var(--muted);font-size:.78rem}
+.m .d{text-align:right;font-weight:700;font-size:.86rem;white-space:nowrap}
+.m.past{opacity:.5}
+.m.now{background:color-mix(in srgb,var(--teal) 9%,#fff)}
+.m.now .d::after{content:" · now";color:var(--teal)}
+.lookup{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.lookup .field{flex:1;min-width:150px}
+.lookup .out{font-weight:800;font-size:1.1rem;color:var(--navy);padding-bottom:10px}
+.btn{border:1px solid var(--line-strong);background:#fff;border-radius:11px;padding:9px 14px;font-weight:700;font-size:.9rem}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+.notebox{background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.88rem;font-family:ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+footer.wrap{margin-top:26px;margin-bottom:30px;font-size:.78rem;color:var(--faint)}
+footer p{margin:4px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(16px);opacity:0;background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;font-size:.9rem;transition:.25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (max-width:820px){ .grid{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="mast">
+    <img class="lin" src="icons/lin.png" alt="Dr. Weiping Lin">
+    <div class="t"><h1>Lin's EDC Calculator</h1><p>Due dates, redating &amp; gestational age<span>ACOG-based · type a date or tap the calendar</span></p></div>
+    <button class="ibtn" id="aboutBtn" aria-label="About and instructions" title="About and instructions"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
+  </div>
+</header>
+
+<main class="wrap grid">
+  <section class="card" aria-label="Inputs">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-mode="lmp">By LMP</button>
+      <button role="tab" aria-selected="false" data-mode="edc">Reported EDC</button>
+      <button role="tab" aria-selected="false" data-mode="us">Ultrasound</button>
+      <button role="tab" aria-selected="false" data-mode="art">IVF</button>
+    </div>
+
+    <!-- LMP -->
+    <div class="pane" data-pane="lmp">
+      <label class="field">First day of last menstrual period
+        <input type="date" id="lmpDate">
+      </label>
+      <label class="field">Cycle length (days)
+        <input type="number" id="cycle" min="21" max="45" value="28" inputmode="numeric">
+        <span class="hint">Adjusts the due date by (cycle − 28) days. Leave at 28 if regular or unknown.</span>
+      </label>
+      <label class="field" style="flex-direction:row;align-items:center;gap:10px;font-weight:600;color:var(--ink)">
+        <input type="checkbox" id="lmpUnsure" style="width:18px;height:18px;accent-color:var(--teal)"> LMP uncertain, or on hormonal contraception near conception
+      </label>
+      <details class="opt sono" id="lmpUsOpt">
+        <summary><span>Add sonogram<small>Recommended: ACOG advises confirming LMP dating by ultrasound before 22 weeks</small></span></summary>
+        <div class="inner" id="lmpUsSlot"></div>
+      </details>
+    </div>
+
+    <!-- Reported EDC -->
+    <div class="pane hidden" data-pane="edc">
+      <label class="field">Estimated due date on record
+        <input type="date" id="edcDate">
+        <span class="hint">From the prenatal record, a referral, or the patient.</span>
+      </label>
+      <label class="field">How it was established
+        <select id="edcBasis">
+          <option value="">Not stated</option>
+          <option>LMP, confirmed by first-trimester ultrasound</option>
+          <option>First-trimester ultrasound</option>
+          <option>Second-trimester ultrasound</option>
+          <option>Third-trimester ultrasound</option>
+          <option>LMP only</option>
+          <option>IVF / ART dating</option>
+        </select>
+      </label>
+    </div>
+
+    <!-- Ultrasound -->
+    <div class="pane hidden" data-pane="us">
+      <div id="usMain"></div>
+      <details class="opt sono" id="usLmpOpt">
+        <summary><span>Add LMP to compare<small>The app will advise LMP vs. sonogram dating (ACOG CO 700)</small></span></summary>
+        <div class="inner">
+          <label class="field">First day of LMP <input type="date" id="cmpLmp"></label>
+          <label class="field">Cycle length (days) <input type="number" id="cmpCycle" min="21" max="45" value="28" inputmode="numeric"></label>
+        </div>
+      </details>
+    </div>
+
+    <!-- IVF -->
+    <div class="pane hidden" data-pane="art">
+      <label class="field">Embryo transfer date <input type="date" id="artDate"></label>
+      <label class="field">Embryo age at transfer
+        <div class="seg" id="embryoAge">
+          <button type="button" data-v="0">Retrieval / IUI</button><button type="button" data-v="3">Day 3</button><button type="button" data-v="5" class="on">Day 5</button><button type="button" data-v="6">Day 6</button>
+        </div>
+        <span class="hint">EDC = transfer date + 266 − embryo age. For IUI or retrieval, enter that date.</span>
+      </label>
+    </div>
+  </section>
+
+  <section aria-label="Results" aria-live="polite">
+    <div id="results"><div class="res-empty">Enter a date on the left to see the due date, gestational age, and key prenatal dates.</div></div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>EDC = LMP + 280 days (adjusted for cycle length); sonogram EDC = scan date + (280 − GA at scan). CRL-to-GA uses the Robinson–Fleming formula.</p>
+  <p>Redating thresholds, suboptimal-dating rule, and IVF dating: American College of Obstetricians and Gynecologists. Methods for Estimating the Due Date. Committee Opinion No. 700, May 2017 (with AIUM and SMFM). Obstet Gynecol 2017;129(5):e150–e154.</p>
+  <p>For clinical decision support only. Confirm against your institution's protocols and the patient's record. No data leaves this device.</p>
+</footer>
+
+<!-- ultrasound block template (reused in LMP tab) -->
+<template id="usTpl">
+  <div class="us-block" style="display:flex;flex-direction:column;gap:12px">
+    <div class="field">Ultrasound performed
+      <div class="seg" data-role="when"><button type="button" data-v="today" class="on">Today</button><button type="button" data-v="other">Another date</button></div>
+    </div>
+    <label class="field hidden" data-role="dateWrap">Date of ultrasound <input type="date" data-role="date">
+      <span class="quick" data-role="quick"></span>
+    </label>
+    <div class="field">Measurement
+      <div class="seg" data-role="meas"><button type="button" data-v="ga" class="on">GA (weeks + days)</button><button type="button" data-v="crl">CRL (mm)</button></div>
+    </div>
+    <div class="row2" data-role="gaWrap">
+      <label class="field">Weeks <select data-role="wk"></select></label>
+      <label class="field">Days <select data-role="dy"></select></label>
+    </div>
+    <label class="field hidden" data-role="crlWrap">Crown–rump length (mm)
+      <input type="number" data-role="crl" min="3" max="84" step="0.1" inputmode="decimal" placeholder="e.g. 22.5">
+      <span class="hint" data-role="crlOut">Valid for CRL 3–84 mm (about 6–14 weeks).</span>
+    </label>
+  </div>
+</template>
+
+<dialog id="about" aria-labelledby="aboutTitle">
+  <div class="in">
+    <button class="close" id="aboutClose" aria-label="Close">×</button>
+    <h2 id="aboutTitle">Lin's EDC Calculator</h2>
+    <p style="color:var(--muted)">Build <span id="verTxt"></span> · September 10, 2026</p>
+    <div class="who"><img class="photo" src="icons/photo.png" alt="Photo of Dr. Weiping Lin"><p><strong>Weiping Lin, D.O., FACOG, FACOOG</strong><br>Holy Name Medical Center, OB/GYN<br><a href="mailto:Wlin@holyname.org">Wlin@holyname.org</a></p></div>
+
+    <h3>How to use</h3>
+    <ol>
+      <li><strong>Pick a tab:</strong> By LMP, Reported EDC, Ultrasound, or IVF.</li>
+      <li><strong>Enter dates</strong> by typing (for example 6/8/2026, 06082026, or 6-8-26) or by tapping the calendar button beside the field.</li>
+      <li><strong>Add a sonogram</strong> in the By LMP tab (or add an LMP in the Ultrasound tab). Choose <em>Today</em> or <em>Another date</em>, then enter the GA in weeks and days or the CRL in mm.</li>
+      <li><strong>Read the advice:</strong> the app compares LMP and sonogram dating against the ACOG thresholds, tells you which EDC to use, and shows the <strong>Final EDC</strong> at the top.</li>
+      <li><strong>Use the extras:</strong> GA on any date, key prenatal dates for this pregnancy, and a one-tap line to copy into the chart.</li>
+      <li><strong>Export or email a report:</strong> choose <em>Detailed</em> (plain-language summary for the patient, with upcoming dates) or <em>Simple</em> (one line for the chart), then copy, download a PDF, print, or email it. On phones, Email attaches the PDF through the share sheet; on computers, the PDF downloads for you to attach.</li>
+    </ol>
+
+    <h3>How it calculates</h3>
+    <ul>
+      <li>EDC by LMP = LMP + 280 days, adjusted by (cycle length − 28).</li>
+      <li>EDC by sonogram = scan date + (280 − GA at scan). CRL converts to GA by the Robinson–Fleming formula.</li>
+      <li>IVF: EDC = transfer date + 266 − embryo age (days).</li>
+      <li>Redating thresholds, the suboptimal-dating rule, and IVF dating: American College of Obstetricians and Gynecologists. Methods for Estimating the Due Date. Committee Opinion No. 700, May 2017 (with AIUM and SMFM). Obstet Gynecol 2017;129(5):e150–e154. <a href="https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2017/05/methods-for-estimating-the-due-date" target="_blank" rel="noopener">acog.org</a></li>
+    </ul>
+
+    <h3>Install as an app</h3>
+    <p>Load this page once while online; afterwards it works offline and opens full-screen.</p>
+    <ol>
+      <li><strong>Chrome or Edge (Windows, Mac, Chromebook):</strong> click the install icon at the right end of the address bar, or open the browser menu and choose <em>Install app</em>.</li>
+      <li><strong>Android (Chrome):</strong> open the menu (⋮) and choose <em>Install app</em> or <em>Add to Home screen</em>.</li>
+      <li><strong>iPhone / iPad (Safari only):</strong> tap Share, then <em>Add to Home Screen</em>.</li>
+      <li><strong>Firefox:</strong> desktop Firefox does not install web apps; the calculator still runs normally in a tab.</li>
+    </ol>
+    <p id="installRow" class="hidden"><button class="btn primary" id="installBtn" type="button">Install on this device</button></p>
+
+    <h3>Updates</h3>
+    <p>The app updates itself. When a new version is ready, a bar appears at the top; tap <strong>Reload</strong>. <button class="btn" id="updBtn" type="button" style="margin-left:4px;padding:5px 10px;font-size:.82rem">Check now</button></p>
+
+    <h3>Privacy</h3>
+    <p>Nothing you enter leaves this device. No patient identifiers are needed or stored.</p>
+
+    <h3>Rights and use</h3>
+    <p>© 2026 Weiping Lin, D.O., FACOG, FACOOG.</p>
+    <p>Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener license">Creative Commons Attribution 4.0 International (CC BY 4.0)</a>. You may share and adapt this calculator, including commercially, provided you credit Weiping Lin, D.O., link to the license, and note any changes. The artwork (icons, avatar, photo) is not covered by this license and remains reserved.</p>
+    <p>It supports, and does not replace, clinical judgment; confirm dating against the patient's record and your institution's protocols.</p>
+
+    <h3>Credits</h3>
+    <p>Developed with AI-assisted coding: Claude Opus 5 (Anthropic).</p>
+  </div>
+</dialog>
+
+<dialog id="repDlg" aria-labelledby="repTitle">
+  <div class="rdlg">
+    <button class="close" id="repClose" aria-label="Close">×</button>
+    <h2 id="repTitle">Export report</h2>
+    <div class="kinds" role="radiogroup" aria-label="Report type">
+      <button type="button" data-kind="detailed" class="on" role="radio" aria-checked="true">Detailed<small>Plain-language summary for the patient, with upcoming dates</small></button>
+      <button type="button" data-kind="simple" role="radio" aria-checked="false">Simple<small>One line for the chart: EDC, basis, and GA</small></button>
+    </div>
+    <div class="rprev" id="repPrev" aria-label="Preview"></div>
+    <div class="acts">
+      <button class="btn" type="button" id="rCopy"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>Copy text</button>
+      <button class="btn" type="button" id="rPdf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 19h14"/></svg>Download PDF</button>
+      <button class="btn" type="button" id="rPrint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/></svg>Print</button>
+      <button class="btn email" type="button" id="rEmail"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Email</button>
+    </div>
+    <p class="hint2" id="repHint"></p>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ============ Date helpers (UTC noon avoids DST errors) ============ */
+const DAY=86400000;
+const $=id=>document.getElementById(id);
+function todayISO(){ const n=new Date(); return iso(new Date(Date.UTC(n.getFullYear(),n.getMonth(),n.getDate(),12))); }
+function parse(s){ if(!s) return null; const [y,m,d]=s.split("-").map(Number); if(!y||!m||!d) return null; return new Date(Date.UTC(y,m-1,d,12)); }
+function iso(d){ return d.toISOString().slice(0,10); }
+function add(d,n){ return new Date(d.getTime()+n*DAY); }
+function diff(a,b){ return Math.round((b-a)/DAY); }   // days from a to b
+function fmt(d){ return d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",year:"numeric",timeZone:"UTC"}); }
+function fmtS(d){ return d.toLocaleDateString("en-US",{month:"2-digit",day:"2-digit",year:"numeric",timeZone:"UTC"}); }
+function wd(days){ const w=Math.floor(days/7), r=days-w*7; return `${w}w ${r}d`; }
+function wdLong(days){ const w=Math.floor(days/7), r=days-w*7; return `${w} weeks ${r} day${r===1?"":"s"}`; }
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(m){ const t=$("toast"); t.textContent=m; t.classList.add("show"); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),2200); }
+
+/* ============ Clinical rules ============ */
+// ACOG CO 700: redate if US and LMP differ by more than these days (by GA at time of scan)
+function redateThreshold(usGAdays){
+  if(usGAdays<=62)  return {limit:5, band:"≤ 8 6/7 weeks", method:"CRL"};
+  if(usGAdays<=97)  return {limit:7, band:"9 0/7 – 13 6/7 weeks", method:"CRL"};
+  if(usGAdays<=111) return {limit:7, band:"14 0/7 – 15 6/7 weeks", method:"biometry"};
+  if(usGAdays<=153) return {limit:10,band:"16 0/7 – 21 6/7 weeks", method:"biometry"};
+  if(usGAdays<=195) return {limit:14,band:"22 0/7 – 27 6/7 weeks", method:"biometry"};
+  return {limit:21, band:"≥ 28 0/7 weeks", method:"biometry"};
+}
+const ACOG={
+  short:"ACOG Committee Opinion No. 700, May 2017",
+  full:"American College of Obstetricians and Gynecologists, Committee on Obstetric Practice, with the American Institute of Ultrasound in Medicine and the Society for Maternal–Fetal Medicine. Methods for Estimating the Due Date. Committee Opinion No. 700. May 2017. Obstet Gynecol 2017;129(5):e150–e154. Table 1, Guidelines for Redating Based on Ultrasonography.",
+  url:"https://www.acog.org/clinical/clinical-guidance/committee-opinion/articles/2017/05/methods-for-estimating-the-due-date"
+};
+const BANDS=[[0,62,"≤ 8 6/7 wk","CRL","> 5 days"],[63,97,"9 0/7 – 13 6/7 wk","CRL","> 7 days"],[98,111,"14 0/7 – 15 6/7 wk","Biometry","> 7 days"],
+  [112,153,"16 0/7 – 21 6/7 wk","Biometry","> 10 days"],[154,195,"22 0/7 – 27 6/7 wk","Biometry","> 14 days"],[196,999,"≥ 28 0/7 wk","Biometry","> 21 days"]];
+function thrTable(ga){ return `<table class="thr"><thead><tr><th>GA at sonogram</th><th>Method</th><th>Redate if difference</th></tr></thead><tbody>${
+  BANDS.map(b=>`<tr class="${ga>=b[0]&&ga<=b[1]?"hit":""}"><td>${b[2]}</td><td>${b[3]}</td><td>${b[4]}</td></tr>`).join("")}</tbody></table>`; }
+function citeHTML(){ return `<div class="cite"><b>Source:</b> ${esc(ACOG.full)} <a href="${ACOG.url}" target="_blank" rel="noopener">acog.org</a></div>`; }
+function crlToGA(mm){ return Math.round(8.052*Math.sqrt(mm)+23.73); }   // Robinson–Fleming, days
+function trimester(ga){ return ga<98?"First trimester":ga<196?"Second trimester":"Third trimester"; }
+function termLabel(ga){
+  if(ga<0) return "Not yet pregnant by these dates";
+  if(ga<259) return ga<154?"":"Preterm";
+  if(ga<273) return "Early term (37 0/7 – 38 6/7)";
+  if(ga<287) return "Full term (39 0/7 – 40 6/7)";
+  if(ga<294) return "Late term (41 0/7 – 41 6/7)";
+  return "Postterm (≥ 42 0/7)";
+}
+const MILESTONES=[
+  {s:70,  e:null,l:"Cell-free DNA screening available",c:"var(--t1)"},
+  {s:77,  e:97,  l:"Nuchal translucency window",c:"var(--t1)", sub:"11 0/7 – 13 6/7 weeks"},
+  {s:105, e:153, l:"Maternal serum AFP / quad screen",c:"var(--t2)", sub:"15 0/7 – 22 6/7 weeks (quad best 16–18)"},
+  {s:126, e:153, l:"Anatomy ultrasound",c:"var(--t2)", sub:"18 0/7 – 22 6/7 weeks"},
+  {s:168, e:195, l:"Gestational diabetes screening",c:"var(--t2)", sub:"24 0/7 – 27 6/7 weeks"},
+  {s:189, e:251, l:"Tdap vaccine",c:"var(--t3)", sub:"27 0/7 – 36 6/7 weeks, ideally early"},
+  {s:196, e:null,l:"Anti-D immune globulin if Rh-negative",c:"var(--t3)", sub:"28 weeks"},
+  {s:224, e:250, l:"RSV vaccine (seasonal)",c:"var(--t3)", sub:"32 0/7 – 36 6/7 weeks, Sept–Jan"},
+  {s:252, e:265, l:"GBS culture",c:"var(--t3)", sub:"36 0/7 – 37 6/7 weeks"},
+  {s:259, e:null,l:"Early term",c:"var(--teal)", sub:"37 0/7 weeks"},
+  {s:273, e:null,l:"Full term",c:"var(--teal)", sub:"39 0/7 weeks"},
+  {s:280, e:null,l:"Estimated due date",c:"var(--navy)", sub:"40 0/7 weeks"},
+  {s:287, e:null,l:"Late term",c:"var(--pink)", sub:"41 0/7 weeks"},
+  {s:294, e:null,l:"Postterm",c:"var(--pink)", sub:"42 0/7 weeks"},
+];
+
+/* ============ Typed-or-calendar date fields ============ */
+const VERSION="v1.4.0";   // keep in step with VERSION in sw.js
+function parseTyped(raw){
+  const s=raw.trim(); if(!s) return "";
+  let y,m,d,mt;
+  if((mt=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/))){ y=+mt[1]; m=+mt[2]; d=+mt[3]; }
+  else if((mt=s.match(/^(\d{1,2})[-\/. ](\d{1,2})[-\/. ](\d{2}|\d{4})$/))){ m=+mt[1]; d=+mt[2]; y=+mt[3]; }
+  else if((mt=s.match(/^(\d{2})(\d{2})(\d{4})$/))){ m=+mt[1]; d=+mt[2]; y=+mt[3]; }
+  else if((mt=s.match(/^(\d{2})(\d{2})(\d{2})$/))){ m=+mt[1]; d=+mt[2]; y=+mt[3]; }
+  else return null;
+  if(y<100) y+=2000;
+  if(y<1900||y>2100||m<1||m>12||d<1) return null;
+  const dt=new Date(Date.UTC(y,m-1,d,12));
+  if(dt.getUTCMonth()!==m-1||dt.getUTCDate()!==d) return null;
+  return iso(dt);
+}
+const CAL_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>';
+function enhanceDate(nat){
+  if(!nat || nat.dataset.enh) return; nat.dataset.enh="1";
+  const wrap=document.createElement("span"); wrap.className="dt";
+  const txt=document.createElement("input"); txt.type="text"; txt.className="dt-txt"; txt.inputMode="numeric"; txt.placeholder="mm/dd/yyyy"; txt.autocomplete="off"; txt.spellcheck=false;
+  const cal=document.createElement("span"); cal.className="dt-cal";
+  const btn=document.createElement("button"); btn.type="button"; btn.innerHTML=CAL_SVG; btn.setAttribute("aria-label","Open calendar"); btn.tabIndex=0;
+  const msg=document.createElement("span"); msg.className="dt-msg";
+  nat.parentNode.insertBefore(wrap,nat); nat.classList.add("dt-native"); nat.tabIndex=-1; nat.setAttribute("aria-hidden","true");
+  cal.append(btn,nat); wrap.append(txt,cal); wrap.after(msg);
+  const labelText=(nat.closest("label")?.firstChild?.textContent||"Date").trim(); txt.setAttribute("aria-label",labelText+" (mm/dd/yyyy)");
+  let internal=false;
+  const fromNative=()=>{ if(internal) return; const d=parse(nat.value); txt.value=d?fmtS(d):""; setMsg(""); };
+  const push=(v)=>{ internal=true; nat.value=v; nat.dispatchEvent(new Event("input",{bubbles:true})); nat.dispatchEvent(new Event("change",{bubbles:true})); internal=false; };
+  function setMsg(m){ msg.textContent=m; wrap.classList.toggle("dt-bad",!!m); }
+  function check(final){
+    const v=parseTyped(txt.value);
+    if(v===""){ setMsg(""); if(nat.value) push(""); return; }
+    if(v===null){ if(final || txt.value.replace(/\D/g,"").length>=8) setMsg("Not a valid date. Use mm/dd/yyyy."); if(nat.value) push(""); return; }
+    if(nat.max && v>nat.max){ setMsg("That date is in the future."); if(nat.value) push(""); return; }
+    setMsg(""); if(nat.value!==v) push(v);
+    if(final){ txt.value=fmtS(parse(v)); }
+  }
+  txt.addEventListener("input",e=>{
+    // auto-insert slashes while typing digits
+    if(e.inputType==="insertText" && /^\d{2}$|^\d{1,2}\/\d{2}$/.test(txt.value)) txt.value+="/";
+    check(false);
+  });
+  txt.addEventListener("blur",()=>check(true));
+  txt.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); check(true); } });
+  nat.addEventListener("change",fromNative); nat.addEventListener("input",fromNative);
+  const open=()=>{ try{ nat.showPicker(); }catch{ nat.focus(); nat.click(); } };
+  nat.addEventListener("click",e=>{ try{ nat.showPicker(); }catch{} });
+  btn.addEventListener("click",e=>{ e.preventDefault(); open(); });
+  fromNative();
+}
+function enhanceAll(root=document){ root.querySelectorAll('input[type=date]').forEach(enhanceDate); }
+
+/* ============ Ultrasound block (used in two places) ============ */
+function makeUS(slot){
+  const n=$("usTpl").content.firstElementChild.cloneNode(true); slot.appendChild(n);
+  const q=r=>n.querySelector(`[data-role=${r}]`);
+  const st={when:"today",meas:"ga"};
+  q("wk").innerHTML=`<option value="">—</option>`;
+  for(let w=4;w<=42;w++) q("wk").insertAdjacentHTML("beforeend",`<option value="${w}">${w}</option>`);
+  for(let d=0;d<=6;d++) q("dy").insertAdjacentHTML("beforeend",`<option value="${d}">${d}</option>`);
+  q("date").max=todayISO();
+  const quickSet=[["Yesterday",1],["1 week ago",7],["2 weeks ago",14],["4 weeks ago",28]];
+  q("quick").innerHTML=quickSet.map(([l,n])=>`<button type="button" data-ago="${n}">${l}</button>`).join("");
+  q("quick").addEventListener("click",e=>{ const b=e.target.closest("[data-ago]"); if(!b) return; e.preventDefault(); q("date").value=iso(add(parse(todayISO()),-b.dataset.ago)); q("date").dispatchEvent(new Event("change",{bubbles:true})); });
+  function seg(role,key){ q(role).addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; st[key]=b.dataset.v; q(role).querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); sync(); calc(); }); }
+  function sync(){ q("dateWrap").classList.toggle("hidden",st.when!=="other"); q("gaWrap").classList.toggle("hidden",st.meas!=="ga"); q("crlWrap").classList.toggle("hidden",st.meas!=="crl"); }
+  seg("when","when"); seg("meas","meas");
+  n.addEventListener("input",calc); n.addEventListener("change",calc);
+  sync();
+  return {
+    touched:false,
+    read(){
+      const date = st.when==="today" ? parse(todayISO()) : parse(q("date").value);
+      if(!date) return {err: st.when==="other" ? "Enter the ultrasound date." : null};
+      let ga, how;
+      if(st.meas==="ga"){ if(q("wk").value==="") return {err:null}; ga=(+q("wk").value)*7+(+q("dy").value); how="biometry"; }
+      else{
+        const mm=parseFloat(q("crl").value);
+        if(!mm){ q("crlOut").textContent="Valid for CRL 3–84 mm (about 6–14 weeks)."; return {err:null}; }
+        if(mm<3||mm>84){ q("crlOut").textContent="CRL must be 3–84 mm."; return {err:"CRL must be between 3 and 84 mm."}; }
+        ga=crlToGA(mm); how="CRL "+mm+" mm"; q("crlOut").textContent=`CRL ${mm} mm ≈ ${wd(ga)}`;
+      }
+      return {date,ga,how,today:st.when==="today"};
+    }
+  };
+}
+const usMain=makeUS($("usMain"));
+const usLmp=makeUS($("lmpUsSlot"));
+
+/* ============ Mode ============ */
+let mode="lmp", embryoAge=5;
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>{
+  mode=b.dataset.mode;
+  document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+  document.querySelectorAll("[data-pane]").forEach(p=>p.classList.toggle("hidden",p.dataset.pane!==mode));
+  calc();
+}));
+$("embryoAge").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; embryoAge=+b.dataset.v; $("embryoAge").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b)); calc(); });
+["lmpDate","cycle","lmpUnsure","edcDate","edcBasis","cmpLmp","cmpCycle","artDate"].forEach(id=>{ $(id).addEventListener("input",calc); $(id).addEventListener("change",calc); });
+["lmpDate","cmpLmp","artDate"].forEach(id=>$(id).max=todayISO());
+$("lmpUsOpt").addEventListener("toggle",calc); $("usLmpOpt").addEventListener("toggle",calc);
+
+/* ============ Core calculation ============ */
+function lmpEDC(lmp,cycle){ const c=Math.min(45,Math.max(21,+cycle||28)); return add(lmp,280+(c-28)); }
+
+function compare(lmp,cycle,us){
+  // GA by LMP-derived EDC on the scan date vs GA by ultrasound
+  const lmpE=lmpEDC(lmp,cycle), lmpGAatScan=280-diff(us.date,lmpE);
+  const delta=lmpGAatScan-us.ga, t=redateThreshold(us.ga), redate=Math.abs(delta)>t.limit;
+  const usE=add(us.date,280-us.ga);
+  return {lmp,lmpE,usE,delta,t,redate,final:redate?usE:lmpE,lmpGAatScan};
+}
+
+function calc(){
+  const today=parse(todayISO()); let r=null; const warns=[];
+  try{
+    if(mode==="lmp"){
+      const lmp=parse($("lmpDate").value); if(!lmp) return empty();
+      const cyc=$("cycle").value;
+      if(+cyc && (+cyc<21||+cyc>45)) warns.push("Cycle length outside 21–45 days; clamped to that range.");
+      const e=lmpEDC(lmp,cyc);
+      r={edc:e,by:`LMP ${fmtS(lmp)}${+cyc&&+cyc!==28?`, ${+cyc}-day cycle`:""}`,basis:"LMP",lmp,
+         noteBase:`EDC ${fmtS(e)} by LMP ${fmtS(lmp)}${+cyc&&+cyc!==28?` (${+cyc}-day cycle)`:""}`,
+         rep:{method:"lmp",lmp,cyc:Math.min(45,Math.max(21,+cyc||28))}};
+      if($("lmpUnsure").checked) r.verdict={cls:"info",h:"LMP uncertain",p:"ACOG recommends dating by ultrasound when the LMP is unknown or unreliable. Add an ultrasound below or use the Ultrasound tab."};
+      let usUsed=false;
+      if($("lmpUsOpt").open){
+        const us=usLmp.read(); if(us.err) warns.push(us.err);
+        if(us.ga!==undefined){ applyCompare(r,compare(lmp,cyc,us),us); usUsed=true; }
+      }
+      if(!usUsed && !r.verdict) r.verdict={cls:"info",h:"LMP dating not yet confirmed",
+        html:`<p>Add a sonogram above to confirm or revise this EDC. A pregnancy without an ultrasound that confirms or revises the EDD before 22 0/7 weeks is considered suboptimally dated.</p>${citeHTML()}`};
+    }
+    else if(mode==="edc"){
+      const e=parse($("edcDate").value); if(!e) return empty();
+      const basis=$("edcBasis").value;
+      r={edc:e,by:`Reported EDC${basis?` (${basis})`:""}`,basis:"reported",noteBase:`EDC ${fmtS(e)} per record${basis?`, by ${basis}`:""}`,rep:{method:"reported",basisText:basis}};
+      if(/Third-trimester/.test(basis)) r.verdict={cls:"redate",h:"Suboptimally dated",p:"No ultrasound before 22 0/7 weeks confirming or revising the EDC. Per ACOG, this pregnancy is considered suboptimally dated for timing decisions."};
+      if(/LMP only/.test(basis)) r.verdict={cls:"info",h:"Confirm with ultrasound",p:"ACOG recommends an ultrasound before 22 0/7 weeks to confirm LMP dating."};
+    }
+    else if(mode==="us"){
+      const us=usMain.read(); if(us.err){ warns.push(us.err); }
+      if(us.ga===undefined) return empty(warns);
+      const e=add(us.date,280-us.ga);
+      r={edc:e,by:`Ultrasound ${us.today?"today":fmtS(us.date)} at ${wd(us.ga)}${us.how.startsWith("CRL")?` (${us.how})`:""}`,basis:"US",
+         noteBase:`EDC ${fmtS(e)} by ${us.how.startsWith("CRL")?us.how+", ":""}${wd(us.ga)} ultrasound on ${fmtS(us.date)}`,
+         rep:{method:"sono",usDate:us.date,usGA:us.ga,usHow:us.how}};
+      if(us.ga>153) r.verdict={cls:"redate",h:"Dated after 22 0/7 weeks",p:"If this is the first ultrasound, the pregnancy is suboptimally dated (ACOG). Third-trimester biometry has ±3 weeks accuracy."};
+      if($("usLmpOpt").open){
+        const lmp=parse($("cmpLmp").value);
+        if(lmp) applyCompare(r,compare(lmp,$("cmpCycle").value,us),us);
+      }
+    }
+    else if(mode==="art"){
+      const t=parse($("artDate").value); if(!t) return empty();
+      const e=add(t,266-embryoAge);
+      const lab=embryoAge?`day-${embryoAge} embryo transfer`:"retrieval / IUI";
+      r={edc:e,by:`IVF: ${lab} ${fmtS(t)}`,basis:"ART",noteBase:`EDC ${fmtS(e)} by ART dating (${lab} on ${fmtS(t)})`,rep:{method:"art",artLab:lab,artDate:t},
+         verdict:{cls:"ok",h:"ART dating",p:"For IVF pregnancies, ACOG recommends dating by embryo age and transfer date rather than ultrasound."}};
+    }
+  }catch(err){ console.error(err); return empty(["Something went wrong reading the dates."]); }
+  if(!r) return empty(warns);
+  render(r,today,warns);
+}
+
+function applyCompare(r,c,us){
+  r.edc=c.final; r.finalBasis=c.redate?"sono":"lmp";
+  const absd=Math.abs(c.delta), dir=c.delta>0?"behind":"ahead of";
+  r.rep={method:c.redate?"sono-redated":"lmp-confirmed",lmp:c.lmp,usDate:us.date,usGA:us.ga,usHow:us.how,lmpE:c.lmpE,usE:c.usE,absd,limit:c.t.limit};
+  const why=`On the sonogram date, LMP dating gives ${wd(c.lmpGAatScan)} and the sonogram measured ${wd(us.ga)}: a difference of ${absd} day${absd===1?"":"s"}${absd?` (sonogram ${dir} LMP)`:""}. For a sonogram at ${c.t.band.replace(/weeks/,"weeks")}, ${ACOG.short} advises changing the EDD when the difference is more than ${c.t.limit} days.`;
+  let extra="";
+  if(us.ga<=97 && !String(us.how).startsWith("CRL")) extra=" In the first trimester, this guidance is based on crown–rump length; use the CRL option if you have it.";
+  if(us.ga>=154 && us.ga<=195 && !c.redate && absd>=10) extra=" The Committee Opinion notes that redating for smaller discrepancies (10–14 days) can be appropriate when the scan is early in this range.";
+  if(us.ga>=196) extra=" Third-trimester biometry is the least accurate (about ±21–30 days); if this is the first sonogram, the pregnancy is suboptimally dated, and redating should account for possible growth abnormality.";
+  const cards=`<div class="cmp"><div class="${c.redate?"":"use"}"><small>EDC by LMP</small><b class="num">${fmtS(c.lmpE)}</b>${c.redate?"":"<em>USE THIS</em>"}</div>
+    <div class="${c.redate?"use":""}"><small>EDC by sonogram</small><b class="num">${fmtS(c.usE)}</b>${c.redate?"<em>USE THIS</em>":""}</div></div>`;
+  if(c.redate){
+    r.by=`Sonogram ${fmtS(us.date)} at ${wd(us.ga)} · redated from LMP`;
+    r.verdict={cls:"redate",h:`Use the sonogram EDC: ${fmtS(c.usE)}`,html:`<p>${esc(why+extra)} The difference exceeds the threshold, so date the pregnancy by the sonogram.</p>${cards}${thrTable(us.ga)}${citeHTML()}`};
+    r.noteBase=`Final EDC ${fmtS(c.usE)} by ${wd(us.ga)} sonogram on ${fmtS(us.date)}; redated from LMP EDC ${fmtS(c.lmpE)} (difference ${absd} d exceeds ${c.t.limit}-d threshold per ACOG Committee Opinion No. 700, May 2017)`;
+  }else{
+    r.by=`LMP · confirmed by ${wd(us.ga)} sonogram ${fmtS(us.date)}`;
+    r.verdict={cls:"ok",h:`Keep the LMP EDC: ${fmtS(c.lmpE)}`,html:`<p>${esc(why+extra)} The difference is within the threshold, so keep LMP dating.</p>${cards}${thrTable(us.ga)}${citeHTML()}`};
+    r.noteBase=`Final EDC ${fmtS(c.lmpE)} by LMP, confirmed by ${wd(us.ga)} sonogram on ${fmtS(us.date)} (difference ${absd} d, within ${c.t.limit}-d threshold per ACOG Committee Opinion No. 700, May 2017)`;
+  }
+}
+
+function empty(warns=[]){
+  $("results").innerHTML=`<div class="res-empty">Enter a date on the left to see the due date, gestational age, and key prenatal dates.</div>${warns.length?`<div class="warns">${warns.map(w=>`<div class="warn">${esc(w)}</div>`).join("")}</div>`:""}`;
+}
+
+let last=null;
+function render(r,today,warns){
+  const ga=280-diff(today,r.edc), lmpEq=add(r.edc,-280), conc=add(r.edc,-266), toGo=diff(today,r.edc);
+  if(ga<0) warns.push("These dates put conception in the future. Check the dates entered.");
+  if(ga>301) warns.push("Gestational age is beyond 43 weeks. Check the dates entered.");
+  last={r,ga,today};
+  const pct=Math.max(0,Math.min(100,ga/294*100));
+  const tl=termLabel(ga);
+  const ms=MILESTONES.map(m=>{
+    const sd=add(lmpEq,m.s), ed=m.e?add(lmpEq,m.e):null;
+    const past = (ed?ga>m.e:ga>m.s), now = m.e ? (ga>=m.s && ga<=m.e) : ga===m.s;
+    return `<div class="m ${past?"past":""} ${now?"now":""}" style="--c:${m.c}"><i></i><div>${esc(m.l)}${m.sub?`<small>${esc(m.sub)}</small>`:""}</div>
+      <div class="d num">${ed?`${fmtS(sd).slice(0,5)} – ${fmtS(ed)}`:fmtS(sd)}</div></div>`;
+  }).join("");
+  $("results").innerHTML=`
+    <div class="hero">
+      <div class="lbl">${r.finalBasis?"FINAL EDC":"Estimated date of confinement"}</div>
+      <div class="edc num">${fmt(r.edc)}</div>
+      <div class="by">${esc(r.by)}</div>
+      ${r.finalBasis?`<span class="final-chip">${r.finalBasis==="sono"?"Dated by sonogram":"Dated by LMP (sonogram confirms)"}</span>`:""}
+      <div class="ga"><b class="num">${ga>=0?wd(ga):"—"}</b><span>gestational age today${toGo>0?` · ${toGo} days to go`:toGo===0?" · due today":` · ${-toGo} days past EDC`}</span></div>
+      ${ga>=0?`<span class="tri">${trimester(ga)}${tl?` · ${tl}`:""}</span>`:""}
+      <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i><span class="tk" style="left:${98/294*100}%"></span><span class="tk" style="left:${196/294*100}%"></span><span class="tk" style="left:${280/294*100}%"></span></div>
+      <div class="bar-lbl"><span>0</span><span>14w</span><span>28w</span><span>40w</span></div>
+    </div>
+    ${r.verdict?`<div class="verdict ${r.verdict.cls}"><h3>${esc(r.verdict.h)}</h3>${r.verdict.html||`<p>${esc(r.verdict.p)}</p>`}</div>`:""}
+    ${warns.length?`<div class="warns">${warns.map(w=>`<div class="warn">${esc(w)}</div>`).join("")}</div>`:""}
+    <div class="facts">
+      <div class="fact"><small>LMP equivalent (from final EDC)</small><b class="num">${fmtS(lmpEq)}</b></div>
+      <div class="fact"><small>Estimated conception</small><b class="num">${fmtS(conc)}</b></div>
+      <div class="fact"><small>39 0/7 weeks</small><b class="num">${fmtS(add(lmpEq,273))}</b></div>
+      <div class="fact"><small>41 0/7 weeks</small><b class="num">${fmtS(add(lmpEq,287))}</b></div>
+    </div>
+
+    <h2 class="sec-h">Gestational age on another date</h2>
+    <div class="card lookup">
+      <label class="field">Date <input type="date" id="lkDate"></label>
+      <div class="out num" id="lkOut">—</div>
+    </div>
+
+    <h2 class="sec-h">Key prenatal dates</h2>
+    <div class="ms">${ms}</div>
+
+    <div class="rep-actions">
+      <button class="btn primary" id="exportBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 19h14"/></svg>Export report</button>
+      <button class="btn" id="emailBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5 12 13l8.5-6.5"/></svg>Email report</button>
+    </div>
+    <h2 class="sec-h">For the chart <button class="btn primary" id="copyBtn">Copy</button></h2>
+    <div class="notebox" id="noteText"></div>`;
+  const note=`${r.noteBase}. GA today (${fmtS(today)}): ${ga>=0?wd(ga):"n/a"}.`;
+  $("noteText").textContent=note;
+  $("exportBtn").onclick=()=>openReport(false);
+  $("emailBtn").onclick=()=>openReport(true);
+  $("copyBtn").onclick=async()=>{ try{ await navigator.clipboard.writeText(note); toast("Copied"); }catch{ const s=getSelection(),rg=document.createRange(); rg.selectNodeContents($("noteText")); s.removeAllRanges(); s.addRange(rg); toast("Selected. Press copy."); } };
+  enhanceAll($("results"));
+  $("lkDate").addEventListener("input",()=>{
+    const d=parse($("lkDate").value); if(!d){ $("lkOut").textContent="—"; return; }
+    const g=280-diff(d,r.edc); $("lkOut").textContent= g<0?"Before conception": g>315?"Beyond 45 weeks": `${wd(g)}`;
+  });
+}
+
+/* ============ Report export ============ */
+const PLAB={"Cell-free DNA screening available":"Cell-free DNA (NIPT) screening can be done",
+  "Nuchal translucency window":"First-trimester (nuchal translucency) ultrasound window",
+  "Maternal serum AFP / quad screen":"Second-trimester blood screening (AFP / quad screen)",
+  "Anatomy ultrasound":"Detailed anatomy ultrasound",
+  "Gestational diabetes screening":"Glucose (gestational diabetes) test",
+  "Tdap vaccine":"Tdap (whooping cough) vaccine",
+  "Anti-D immune globulin if Rh-negative":"RhoGAM shot, only if your blood type is Rh-negative",
+  "RSV vaccine (seasonal)":"RSV vaccine (September to January)",
+  "GBS culture":"Group B strep swab",
+  "Early term":"Early term begins (37 weeks)","Full term":"Full term begins (39 weeks)",
+  "Estimated due date":"Your estimated due date (40 weeks)","Late term":"41 weeks","Postterm":"42 weeks"};
+function fmtL(d){ return d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric",year:"numeric",timeZone:"UTC"}); }
+function fmtM(d){ return d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric",timeZone:"UTC"}); }
+function wdWords(days){ const w=Math.floor(days/7), r=days-w*7; return `${w} week${w===1?"":"s"}${r?` and ${r} day${r===1?"":"s"}`:""}`; }
+
+function simpleLine(){
+  const {r,ga,today}=last, R=r.rep||{}, E=fmtS(r.edc);
+  const crl=R.usHow&&String(R.usHow).startsWith("CRL")?`, ${R.usHow}`:"";
+  let s;
+  switch(R.method){
+    case "lmp": s=`EDC: ${E} by LMP ${fmtS(R.lmp)}${R.cyc!==28?` (${R.cyc}-day cycle)`:""} (not yet confirmed by sono)`; break;
+    case "lmp-confirmed": s=`EDC: ${E} by LMP ${fmtS(R.lmp)} (confirmed by sono ${fmtS(R.usDate)} at ${wd(R.usGA)}${crl})`; break;
+    case "sono-redated": s=`EDC: ${E} by sono ${fmtS(R.usDate)} at ${wd(R.usGA)}${crl} (redated from LMP ${fmtS(R.lmp)}; LMP EDC ${fmtS(R.lmpE)}; ${R.absd}-day difference exceeds ${R.limit}-day threshold, ACOG CO 700)`; break;
+    case "sono": s=`EDC: ${E} by sono ${fmtS(R.usDate)} at ${wd(R.usGA)}${crl}`; break;
+    case "reported": s=`EDC: ${E} per record${R.basisText?` (${R.basisText})`:""}`; break;
+    case "art": s=`EDC: ${E} by IVF (${R.artLab} ${fmtS(R.artDate)})`; break;
+    default: s=`EDC: ${E}`;
+  }
+  return `${s}. GA ${ga>=0?wd(ga):"n/a"} on ${fmtS(today)}.`;
+}
+function patientBasis(){
+  const R=last.r.rep||{};
+  switch(R.method){
+    case "lmp": return `Your due date is based on the first day of your last menstrual period, ${fmtM(R.lmp)}. Your care team may confirm it with an ultrasound.`;
+    case "lmp-confirmed": return `Your due date is based on the first day of your last menstrual period, ${fmtM(R.lmp)}. Your ultrasound on ${fmtM(R.usDate)} confirmed it.`;
+    case "sono-redated": return `Your due date is based on your ultrasound on ${fmtM(R.usDate)}. The ultrasound measurements differed from your period dates by more than national guidelines allow, so your due date was set by the ultrasound, which is the more accurate measure in this situation.`;
+    case "sono": return `Your due date is based on your ultrasound on ${fmtM(R.usDate)}.`;
+    case "reported": return "This due date comes from your medical record.";
+    case "art": return `Your due date is based on your IVF ${R.artLab.replace("retrieval / IUI","egg retrieval or insemination")} on ${fmtM(R.artDate)}.`;
+    default: return "";
+  }
+}
+function upcoming(){
+  const {r,ga}=last, lmpEq=add(r.edc,-280), out=[];
+  MILESTONES.forEach(m=>{
+    const end=m.e??m.s; if(ga>end) return;
+    const sd=add(lmpEq,m.s), ed=m.e?add(lmpEq,m.e):null;
+    const when=ed?(ga>=m.s?`now through ${fmtM(ed)}`:`${fmtM(sd)} to ${fmtM(ed)}`):fmtM(sd);
+    out.push([PLAB[m.l]||m.l,when]);
+  });
+  return out;
+}
+function detailedData(){
+  const {r,ga,today}=last;
+  return {
+    edcLong:fmtL(r.edc), gaText:ga>=0?wdWords(ga):"not yet pregnant by these dates", tri:ga>=0?trimester(ga):"",
+    basis:patientBasis(), up:upcoming(), full39:fmtM(add(r.edc,-7)), today:fmtM(today), simple:simpleLine()
+  };
+}
+function detailedText(){
+  const d=detailedData();
+  return [`YOUR PREGNANCY DATES`,`Prepared ${d.today}`,``,`Estimated due date: ${d.edcLong}`,`How far along today: ${d.gaText}${d.tri?` (${d.tri.toLowerCase()})`:""}`,``,
+    `HOW YOUR DUE DATE WAS SET`,d.basis,``,`DATES TO KNOW`,...d.up.map(([l,w])=>`- ${l}: ${w}`),``,
+    `GOOD TO KNOW`,`A due date is an estimate. Many babies are born in the weeks before or after it. Full term begins at 39 weeks (${d.full39}).`,
+    `Your care team will confirm which tests and vaccines are right for you. Call them with any questions.`,``,
+    `For your care team: ${d.simple}`,`Dating method per ACOG Committee Opinion No. 700, Methods for Estimating the Due Date (May 2017).`,``,`Lin's EDC Calculator ${VERSION}`].join("\n");
+}
+function detailedHTML(forPrint){
+  const d=detailedData(), img=new URL("icons/lin.png",location.href).href;
+  return `<div class="rp">
+  <div class="rp-h"><div><div class="rp-t">Your Pregnancy Dates</div><div class="rp-s">Prepared ${esc(d.today)}</div></div>${forPrint?`<img src="${img}" alt="">`:""}</div>
+  <div class="rp-edc"><small>Estimated due date</small><b>${esc(d.edcLong)}</b><span>How far along today: <strong>${esc(d.gaText)}</strong>${d.tri?` · ${esc(d.tri)}`:""}</span></div>
+  <h3>How your due date was set</h3><p>${esc(d.basis)}</p>
+  <h3>Dates to know</h3><table>${d.up.map(([l,w])=>`<tr><td>${esc(l)}</td><td>${esc(w)}</td></tr>`).join("")}</table>
+  <h3>Good to know</h3><p>A due date is an estimate. Many babies are born in the weeks before or after it. Full term begins at 39 weeks (${esc(d.full39)}).</p>
+  <p>Your care team will confirm which tests and vaccines are right for you. Call them with any questions.</p>
+  <div class="rp-c"><b>For your care team:</b> ${esc(d.simple)}<br><small>Dating method per ACOG Committee Opinion No. 700, Methods for Estimating the Due Date (May 2017).</small></div>
+  <div class="rp-f">Lin's EDC Calculator ${VERSION} · by Weiping Lin, D.O., FACOG, FACOOG</div></div>`;
+}
+const RP_CSS=`.rp{font-family:Figtree,Arial,sans-serif;color:#16294a;line-height:1.45}
+.rp-h{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:3px solid #23898c;padding-bottom:8px;margin-bottom:12px}
+.rp-h img{width:64px;height:64px;border-radius:50%}
+.rp-t{font-size:1.35rem;font-weight:800;color:#1c3a64}.rp-s{font-size:.85rem;color:#566783}
+.rp-edc{background:#1c3a64;color:#fff;border-radius:12px;padding:12px 14px;margin:6px 0 10px}
+.rp-edc small{display:block;font-size:.78rem;opacity:.8;font-weight:700}.rp-edc b{display:block;font-size:1.35rem;margin:2px 0}.rp-edc span{font-size:.9rem}
+.rp h3{font-size:.98rem;color:#23898c;margin:14px 0 4px}.rp p{margin:4px 0}
+.rp table{width:100%;border-collapse:collapse;font-size:.88rem}.rp td{border-bottom:1px solid #dde4ee;padding:5px 4px;vertical-align:top}.rp td:last-child{text-align:right;font-weight:700;white-space:nowrap}
+.rp-c{margin-top:14px;background:#f1f5fa;border-left:4px solid #23898c;padding:8px 10px;font-size:.84rem;border-radius:6px}
+.rp-f{margin-top:12px;font-size:.75rem;color:#8b98ad}`;
+
+/* --- minimal text PDF writer (Helvetica, US Letter) --- */
+function pdfSafe(s){ return String(s).replace(/[–—]/g,"-").replace(/[·•]/g,"-").replace(/≥/g,">=").replace(/≤/g,"<=").replace(/[’‘]/g,"'").replace(/[“”]/g,'"').replace(/±/g,"+/-").replace(/…/g,"...").replace(/[^\x20-\x7E]/g,""); }
+function pdfEsc(s){ return s.replace(/\\/g,"\\\\").replace(/\(/g,"\\(").replace(/\)/g,"\\)"); }
+function wrapText(t,size,bold,maxW){
+  const cw=size*(bold?0.56:0.49), max=Math.max(10,Math.floor(maxW/cw)), out=[];
+  t.split("\n").forEach(par=>{ let line=""; par.split(" ").forEach(w=>{ if((line+" "+w).trim().length>max){ if(line) out.push(line); line=w; } else line=(line?line+" ":"")+w; }); out.push(line); });
+  return out;
+}
+function buildPDF(blocks){
+  const W=612,H=792,M=54,BM=38,maxW=W-2*M, pages=[]; let ops=[], y=H-M;
+  const flush=()=>{ pages.push(ops.join("\n")); ops=[]; y=H-M; };
+  for(const b of blocks){
+    if(b.bar){ ops.push(`0.110 0.227 0.392 rg 0 ${H-92} ${W} 92 re f`);
+      ops.push(`BT /F2 22 Tf 1 1 1 rg ${M} ${H-50} Td (${pdfEsc(pdfSafe(b.title))}) Tj ET`);
+      ops.push(`BT /F1 10 Tf 0.85 0.9 0.97 rg ${M} ${H-70} Td (${pdfEsc(pdfSafe(b.sub))}) Tj ET`); y=H-92-26; continue; }
+    if(b.box){ const lines=wrapText(pdfSafe(b.text),b.size||12,true,maxW-24), lh=(b.size||12)*1.35, hgt=lines.length*lh+18+(b.label?14:0);
+      if(y-hgt<BM) flush();
+      ops.push(`${b.fill||"0.945 0.961 0.980"} rg ${M} ${(y-hgt).toFixed(1)} ${maxW} ${hgt.toFixed(1)} re f`);
+      let yy=y-12; if(b.label){ yy-=9; ops.push(`BT /F2 9 Tf 0.337 0.404 0.514 rg ${M+12} ${yy.toFixed(1)} Td (${pdfEsc(pdfSafe(b.label))}) Tj ET`); yy-=4; }
+      lines.forEach(l=>{ yy-=lh; ops.push(`BT /F2 ${b.size||12} Tf ${b.color||"0.086 0.161 0.290"} rg ${M+12} ${(yy+3).toFixed(1)} Td (${pdfEsc(l)}) Tj ET`); });
+      y-=hgt+12; continue; }
+    if(b.row){ const size=10, lh=size*1.38, colX=M+maxW*0.6;
+      const right=pdfSafe(b.right), left=wrapText(pdfSafe(b.left),size,false,maxW*0.6-12);
+      if(y-lh*left.length<BM) flush();
+      left.forEach((l,i)=>{ y-=lh; ops.push(`BT /F1 ${size} Tf 0.086 0.161 0.290 rg ${M} ${y.toFixed(1)} Td (${pdfEsc(l)}) Tj ET`);
+        if(i===0) ops.push(`BT /F2 ${size} Tf 0.086 0.161 0.290 rg ${colX.toFixed(1)} ${y.toFixed(1)} Td (${pdfEsc(right)}) Tj ET`); });
+      ops.push(`0.87 0.89 0.93 RG 0.5 w ${M} ${(y-4).toFixed(1)} m ${W-M} ${(y-4).toFixed(1)} l S`); y-=4; continue; }
+    const size=b.size||11, lh=size*1.4, lines=wrapText(pdfSafe(b.text),size,b.bold,maxW);
+    y-=(b.before||0);
+    for(const l of lines){ if(y-lh<BM) flush(); y-=lh; ops.push(`BT /${b.bold?"F2":"F1"} ${size} Tf ${b.color||"0.086 0.161 0.290"} rg ${M} ${y.toFixed(1)} Td (${pdfEsc(l)}) Tj ET`); }
+    y-=(b.after||0);
+  }
+  flush();
+  const objs=[]; const add_=s=>{ objs.push(s); return objs.length; };
+  add_("<< /Type /Catalog /Pages 2 0 R >>"); add_("PAGES");
+  add_("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+  add_("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  const kids=[];
+  pages.forEach(c=>{ const cid=add_(`<< /Length ${c.length} >>\nstream\n${c}\nendstream`);
+    const pid=add_(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ${cid} 0 R >>`); kids.push(pid); });
+  objs[1]=`<< /Type /Pages /Kids [${kids.map(k=>k+" 0 R").join(" ")}] /Count ${kids.length} >>`;
+  let out="%PDF-1.4\n", offs=[];
+  objs.forEach((o,i)=>{ offs.push(out.length); out+=`${i+1} 0 obj\n${o}\nendobj\n`; });
+  const xref=out.length;
+  out+=`xref\n0 ${objs.length+1}\n0000000000 65535 f \n`+offs.map(o=>String(o).padStart(10,"0")+" 00000 n \n").join("");
+  out+=`trailer\n<< /Size ${objs.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  return new Blob([out],{type:"application/pdf"});
+}
+function reportPDF(kind){
+  const d=detailedData(), t="0.137 0.537 0.549";
+  const blocks = kind==="simple"
+    ? [{bar:true,title:"EDC Summary",sub:`Prepared ${d.today} - Lin's EDC Calculator ${VERSION}`},
+       {box:true,label:"FOR THE CHART",text:d.simple,size:12},
+       {text:"Dating method per ACOG Committee Opinion No. 700, Methods for Estimating the Due Date (May 2017; Obstet Gynecol 2017;129:e150-e154).",size:9,color:"0.337 0.404 0.514"}]
+    : [{bar:true,title:"Your Pregnancy Dates",sub:`Prepared ${d.today} - Lin's EDC Calculator ${VERSION}`},
+       {box:true,label:"ESTIMATED DUE DATE",text:d.edcLong,size:18,fill:"0.878 0.941 0.945"},
+       {text:`How far along today: ${d.gaText}${d.tri?` (${d.tri.toLowerCase()})`:""}`,size:12,bold:true,after:6},
+       {text:"How your due date was set",size:13,bold:true,color:t,before:4,after:2},{text:d.basis,size:11},
+       {text:"Dates to know",size:13,bold:true,color:t,before:12,after:2},
+       ...d.up.map(([l,w])=>({row:true,left:l,right:w})),
+       {text:"Good to know",size:13,bold:true,color:t,before:14,after:2},
+       {text:`A due date is an estimate. Many babies are born in the weeks before or after it. Full term begins at 39 weeks (${d.full39}).`,size:11,after:4},
+       {text:"Your care team will confirm which tests and vaccines are right for you. Call them with any questions.",size:11,after:10},
+       {box:true,label:"FOR YOUR CARE TEAM",text:d.simple,size:10},
+       {text:"Dating method per ACOG Committee Opinion No. 700, Methods for Estimating the Due Date (May 2017). Prepared with Lin's EDC Calculator by Weiping Lin, D.O., FACOG, FACOOG.",size:8.5,color:"0.545 0.596 0.678"}];
+  return buildPDF(blocks);
+}
+
+let repKind="detailed";
+function repFile(){ const edc=iso(last.r.edc); return `${repKind==="simple"?"EDC-summary":"Pregnancy-dates"}_EDC-${edc}.pdf`; }
+function repText(){ return repKind==="simple"?simpleLine():detailedText(); }
+function renderRepPreview(){
+  document.querySelectorAll("#repDlg [data-kind]").forEach(b=>{ const on=b.dataset.kind===repKind; b.classList.toggle("on",on); b.setAttribute("aria-checked",on); });
+  $("repPrev").innerHTML = repKind==="simple" ? `<pre>${esc(simpleLine())}</pre>` : `<style>${RP_CSS}</style>${detailedHTML(false)}`;
+}
+function openReport(emailFocus){
+  if(!last) return;
+  renderRepPreview();
+  $("repTitle").textContent= emailFocus?"Email report":"Export report";
+  $("repHint").textContent= canShareFile() ? "Email opens your phone's share sheet with the PDF attached; choose your mail app. No patient name is included."
+    : "Email opens your mail app with the report in the message. Browsers can't attach files to a new email, so the PDF downloads at the same time for you to attach. No patient name is included.";
+  $("repDlg").showModal(); (emailFocus?$("rEmail"):$("rPdf")).focus();
+}
+function canShareFile(){ try{ return !!(navigator.canShare && navigator.canShare({files:[new File(["x"],"t.pdf",{type:"application/pdf"})]})); }catch{ return false; } }
+function downloadBlob(blob,name){ const u=URL.createObjectURL(blob), a=document.createElement("a"); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),2000); }
+document.querySelectorAll("#repDlg [data-kind]").forEach(b=>b.addEventListener("click",()=>{ repKind=b.dataset.kind; renderRepPreview(); }));
+$("repClose").onclick=()=>$("repDlg").close();
+$("repDlg").addEventListener("click",e=>{ if(e.target===$("repDlg")) $("repDlg").close(); });
+$("rCopy").onclick=async()=>{ try{ await navigator.clipboard.writeText(repText()); toast("Copied"); }catch{ toast("Copy not available here"); } };
+$("rPdf").onclick=()=>{ downloadBlob(reportPDF(repKind),repFile()); toast("PDF downloaded"); };
+$("rPrint").onclick=()=>{
+  const f=document.createElement("iframe"); f.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0"; document.body.appendChild(f);
+  const body = repKind==="simple" ? `<div class="rp"><div class="rp-h"><div><div class="rp-t">EDC Summary</div><div class="rp-s">Prepared ${esc(fmtM(last.today))}</div></div></div><div class="rp-c" style="font-size:1rem">${esc(simpleLine())}</div><div class="rp-f">Dating method per ACOG Committee Opinion No. 700 (May 2017). Lin's EDC Calculator ${VERSION}</div></div>` : detailedHTML(true);
+  f.srcdoc=`<!doctype html><html><head><meta charset="utf-8"><title>${repKind==="simple"?"EDC Summary":"Your Pregnancy Dates"}</title><style>@page{size:letter;margin:.6in}body{margin:0}${RP_CSS}</style></head><body>${body}</body></html>`;
+  f.onload=()=>{ setTimeout(()=>{ f.contentWindow.focus(); f.contentWindow.print(); setTimeout(()=>f.remove(),4000); },250); };
+};
+$("rEmail").onclick=async()=>{
+  const subj= repKind==="simple" ? `EDC summary (EDC ${fmtS(last.r.edc)})` : "Your pregnancy dates";
+  const file=new File([reportPDF(repKind)],repFile(),{type:"application/pdf"});
+  if(canShareFile()){
+    try{ await navigator.share({files:[file],title:subj,text:repKind==="simple"?simpleLine():"Your pregnancy dates are attached."}); toast("Shared"); return; }
+    catch(err){ if(err&&err.name==="AbortError"){ toast("Email cancelled"); return; } }
+  }
+  downloadBlob(file,file.name);
+  location.href=`mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(repText())}`;
+  toast("Attach the downloaded PDF if you want it included");
+};
+
+/* ============ PWA: install + self-update ============ */
+let installEvt=null, swReg=null;
+window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); installEvt=e; $("installRow").classList.remove("hidden"); });
+window.addEventListener("appinstalled",()=>{ installEvt=null; $("installRow").classList.add("hidden"); toast("Installed"); });
+$("installBtn").onclick=async()=>{ if(!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt=null; $("installRow").classList.add("hidden"); };
+function showUpdateBar(worker){
+  if($("updBar")) return;
+  const bar=document.createElement("div"); bar.id="updBar"; bar.className="upd"; bar.setAttribute("role","status");
+  bar.innerHTML='<span>A new version is ready.</span><button type="button">Reload</button>';
+  bar.querySelector("button").onclick=()=>worker.postMessage({type:"SKIP_WAITING"});
+  document.body.appendChild(bar);
+}
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",async()=>{
+    try{
+      swReg=await navigator.serviceWorker.register("sw.js");
+      if(swReg.waiting && navigator.serviceWorker.controller) showUpdateBar(swReg.waiting);
+      swReg.addEventListener("updatefound",()=>{ const w=swReg.installing; w&&w.addEventListener("statechange",()=>{ if(w.state==="installed"&&navigator.serviceWorker.controller) showUpdateBar(w); }); });
+      document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible") swReg.update().catch(()=>{}); });
+      setInterval(()=>swReg.update().catch(()=>{}),3600000);
+    }catch(err){ console.warn("SW not registered",err); }
+  });
+  let refreshed=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(refreshed) return; refreshed=true; location.reload(); });
+}
+$("updBtn").onclick=async()=>{
+  if(!swReg){ toast("Updates work once the app is opened from its web link"); return; }
+  toast("Checking for updates…");
+  try{ await swReg.update(); setTimeout(()=>{ if(!swReg.waiting&&!swReg.installing) toast(`You're on the latest version (${VERSION})`); },1500); }catch{ toast("Couldn't check. Are you online?"); }
+};
+
+/* boot */
+enhanceAll();
+$("verTxt").textContent=VERSION;
+$("aboutBtn").onclick=()=>$("about").showModal();
+$("aboutClose").onclick=()=>$("about").close();
+$("about").addEventListener("click",e=>{ if(e.target===$("about")) $("about").close(); });
+calc();
+</script>
+</body>
+</html>
