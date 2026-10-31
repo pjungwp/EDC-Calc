@@ -11,7 +11,7 @@
 /* Lin's EDC Calculator — service worker
    To publish an update: change VERSION below (and VERSION in index.html), then redeploy.
    Installed apps detect the new sw.js, download the update, and show a "Reload" bar. */
-const VERSION = "1.4.0";
+const VERSION = "1.4.1";
 const CACHE = `lins-edc-${VERSION}`;
 const RUNTIME = "lins-edc-runtime";
 const CORE = [
@@ -19,6 +19,8 @@ const CORE = [
   "./index.html",
   "./manifest.json",
   "./LICENSE.md",
+  "./skins/skins.css",
+  "./skins/skins.js",
   "./icons/lin.png",
   "./icons/photo.png",
   "./icons/icon-192-v4.png",

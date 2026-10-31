@@ -30,6 +30,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="skins/skins.css">
+<script src="skins/skins.js"></script><script>AppSkins.init('edc-calc.skin')</script>
 <style>
 :root{
   --bg:#f4f8fc; --paper:#fff; --paper-2:#f6f9fc; --ink:#16294a; --muted:#566783; --faint:#8b98ad;
@@ -192,6 +194,64 @@ footer p{margin:4px 0}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 @media (max-width:820px){ .grid{grid-template-columns:1fr} }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* Look picker (palette button in the header) */
+#lookDlg{border:0;border-radius:18px;padding:0;width:min(520px,calc(100vw - 20px));max-height:calc(100dvh - 24px);box-shadow:var(--shadow);color:var(--ink)}
+#lookDlg::backdrop{background:rgba(12,24,44,.5)}
+.lookdlg{padding:18px;display:flex;flex-direction:column;gap:12px;position:relative}
+.lookdlg h2{margin:0;font-size:1.2rem;color:var(--navy)}
+.lookdlg .close{position:absolute;top:10px;right:12px;background:none;border:0;font-size:1.7rem;line-height:1;color:var(--muted)}
+.lookdlg p{margin:0;font-size:.84rem;color:var(--muted)}
+.looks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:8px}
+.look{display:flex;align-items:center;gap:10px;min-height:44px;border:1.5px solid var(--line-strong);background:#fff;border-radius:12px;padding:8px 12px;text-align:left;font-weight:700;font-size:.92rem;color:var(--ink)}
+.look[aria-pressed=true]{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+.look .sw{display:flex;flex:none}
+.look .sw i{width:16px;height:16px;border-radius:50%;border:1px solid rgba(0,0,0,.2);margin-left:-5px}
+.look .sw i:first-child{margin-left:0}
+.mast-btns{display:flex;gap:8px;flex:none;align-self:flex-start}
+@media (max-width:600px){ .mast-btns{flex-direction:column} }
+
+/* ================= app-skins adapter: map the shared --sk-* tokens onto this app =================
+   Only applies while a skin is chosen (html[data-skin]); "App default" leaves everything above untouched.
+   Trimester colours (--t1..--t3, --pink) are kept on purpose. */
+:root[data-skin]{
+  --bg:var(--sk-bg); --paper:var(--sk-surface); --paper-2:var(--sk-surface-2); --ink:var(--sk-ink); --muted:var(--sk-sub); --faint:var(--sk-faint);
+  --navy:var(--sk-accent-text); --teal:var(--sk-accent); --line:var(--sk-line); --line-strong:color-mix(in srgb,var(--sk-ink) 26%,var(--sk-line));
+  --warn:var(--sk-warn); --warn-bg:var(--sk-warn-bg); --ok:var(--sk-ok); --ok-bg:var(--sk-ok-bg); --info-bg:var(--sk-accent-soft);
+  --radius:var(--sk-radius); --shadow:var(--sk-shadow);
+}
+/* header and footer text sit on the background art, so they get panels */
+:root[data-skin] :is(.mast,footer.wrap){background:var(--sk-surface);border:1px solid var(--sk-line);border-radius:var(--sk-radius);box-shadow:var(--sk-shadow);-webkit-backdrop-filter:var(--sk-blur);backdrop-filter:var(--sk-blur)}
+:root[data-skin] .mast{padding:12px 14px}
+:root[data-skin] footer.wrap{padding-top:10px;padding-bottom:10px;color:var(--sk-sub);width:calc(100% - 32px)}
+:root[data-skin] .mast p{color:var(--sk-accent-text)}
+:root[data-skin] .sec-h{background:var(--sk-surface);border:1px solid var(--sk-line);border-radius:var(--sk-radius-sm);padding:6px 12px;color:var(--sk-accent-text);-webkit-backdrop-filter:var(--sk-blur);backdrop-filter:var(--sk-blur)}
+:root[data-skin] .lin{border-color:var(--sk-surface)}
+:root[data-skin] :is(.card,.res-empty,.ms,.fact){border-radius:var(--sk-radius);-webkit-backdrop-filter:var(--sk-blur);backdrop-filter:var(--sk-blur)}
+:root[data-skin] .card{box-shadow:var(--sk-shadow)}
+/* hard-coded white fields and buttons */
+:root[data-skin] :is(.ibtn,.field input,.field select,.seg,.quick button,.cmp div,.thr,.btn,.rdlg .kinds button,.final-chip,.look){background:var(--sk-surface);color:var(--sk-ink)}
+:root[data-skin] :is(.field input,.field select,.btn,.seg,.look,.rdlg .kinds button){border-radius:var(--sk-radius-sm)}
+:root[data-skin] .ibtn{color:var(--sk-accent-text)}
+:root[data-skin] .dt-cal button{color:var(--sk-accent-text)}
+:root[data-skin] .final-chip{color:var(--sk-accent-text)}
+:root[data-skin] .thr tr.hit td{background:var(--sk-warn-bg);color:var(--sk-warn)}
+:root[data-skin] .dt-bad .dt-txt{background:var(--sk-warn-bg)!important}
+:root[data-skin] .m.now{background:var(--sk-accent-soft)}
+:root[data-skin] .opt.sono{background:color-mix(in srgb,var(--sk-accent) 7%,var(--sk-surface))}
+:root[data-skin] .opt.sono summary{color:var(--sk-accent-text)}
+:root[data-skin] .rdlg .kinds button.on{background:var(--sk-accent-soft)}
+/* white text on the accent */
+:root[data-skin] .tabs button[aria-selected=true],:root[data-skin] :is(.upd,.toast){background:var(--sk-accent);color:var(--sk-on-accent)}
+:root[data-skin] :is(.seg button.on,.btn.primary,.rdlg .acts .btn.email,.upd button,.opt.sono summary::before){background:var(--sk-accent);border-color:var(--sk-accent);color:var(--sk-on-accent)}
+:root[data-skin] .upd button{background:var(--sk-on-accent);color:var(--sk-accent)}
+/* the result card: accent gradient with the accent's text colour */
+:root[data-skin] .hero{background:linear-gradient(150deg,var(--sk-accent),var(--sk-accent-2));color:var(--sk-on-accent);box-shadow:var(--sk-shadow)}
+:root[data-skin] .hero :is(.tri,.bar){background:color-mix(in srgb,var(--sk-on-accent) 16%,transparent)}
+:root[data-skin] .hero .bar .tk{background:color-mix(in srgb,var(--sk-on-accent) 55%,transparent)}
+/* dialogs: solid, never see-through */
+:root[data-skin] :is(#about,#repDlg,#lookDlg){background:linear-gradient(var(--sk-surface),var(--sk-surface)),var(--sk-bg);color:var(--sk-ink);border-radius:var(--sk-radius)}
+:root[data-skin] #about :is(h2,h3,a){color:var(--sk-accent-text)}
+:root[data-skin] #about .photo{border-color:var(--sk-accent)}
 </style>
 </head>
 <body>
@@ -199,7 +259,10 @@ footer p{margin:4px 0}
   <div class="mast">
     <img class="lin" src="icons/lin.png" alt="Dr. Weiping Lin">
     <div class="t"><h1>Lin's EDC Calculator</h1><p>Due dates, redating &amp; gestational age<span>ACOG-based · type a date or tap the calendar</span></p></div>
+    <div class="mast-btns">
     <button class="ibtn" id="aboutBtn" aria-label="About and instructions" title="About and instructions"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg></button>
+    <button class="ibtn" id="lookBtn" aria-label="Look" title="Look"><svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.7 1.7-1.7H16a5 5 0 0 0 5-5c0-3.9-4-7.2-9-7.2z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/></svg></button>
+    </div>
   </div>
 </header>
 
@@ -358,6 +421,15 @@ footer p{margin:4px 0}
   </div>
 </dialog>
 
+<dialog id="lookDlg" aria-labelledby="lookTitle">
+  <div class="lookdlg">
+    <button class="close" id="lookClose" aria-label="Close">×</button>
+    <h2 id="lookTitle">Look</h2>
+    <p>Colors and background for this device only.</p>
+    <div class="looks" id="looks" role="group" aria-labelledby="lookTitle"></div>
+  </div>
+</dialog>
+
 <dialog id="repDlg" aria-labelledby="repTitle">
   <div class="rdlg">
     <button class="close" id="repClose" aria-label="Close">×</button>
@@ -443,7 +515,7 @@ const MILESTONES=[
 ];
 
 /* ============ Typed-or-calendar date fields ============ */
-const VERSION="v1.4.0";   // keep in step with VERSION in sw.js
+const VERSION="v1.4.1";   // keep in step with VERSION in sw.js
 function parseTyped(raw){
   const s=raw.trim(); if(!s) return "";
   let y,m,d,mt;
@@ -930,6 +1002,23 @@ $("updBtn").onclick=async()=>{
 enhanceAll();
 $("verTxt").textContent=VERSION;
 $("aboutBtn").onclick=()=>$("about").showModal();
+/* Look: shared app-skins pack (skins/), saved on this device */
+function renderLooks(focusId){
+  const box=$("looks"); if(!box||!window.AppSkins) return;
+  const cur=AppSkins.get(), on=AppSkins.SKINS.some(k=>k.id===cur)?cur:"";
+  const opts=[{id:"",name:"App default",swatch:["#f4f8fc","#1c3a64","#23898c"]}].concat(AppSkins.SKINS);
+  box.innerHTML=opts.map(k=>`<button type="button" class="look" data-look="${k.id}" aria-pressed="${k.id===on}"><span class="sw" aria-hidden="true">${k.swatch.map(c=>`<i style="background:${c}"></i>`).join("")}</span>${k.name}</button>`).join("");
+  box.querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    AppSkins.set(b.dataset.look||null);
+    if(!b.dataset.look) document.querySelector('meta[name="theme-color"]')?.setAttribute("content","#f4f8fc");
+    renderLooks(b.dataset.look);
+  });
+  if(focusId!==undefined) box.querySelector(`[data-look="${focusId}"]`)?.focus();
+}
+renderLooks();
+$("lookBtn").onclick=()=>$("lookDlg").showModal();
+$("lookClose").onclick=()=>$("lookDlg").close();
+$("lookDlg").addEventListener("click",e=>{ if(e.target===$("lookDlg")) $("lookDlg").close(); });
 $("aboutClose").onclick=()=>$("about").close();
 $("about").addEventListener("click",e=>{ if(e.target===$("about")) $("about").close(); });
 calc();

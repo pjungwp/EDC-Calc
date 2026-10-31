@@ -1,0 +1,10 @@
+/* app-skins drop-in. <link rel="stylesheet" href="skins/skins.css"> + <script src="skins/skins.js"></script>
+   AppSkins.init('myapp.skin') re-applies the saved skin; AppSkins.set('impressionist' | null) changes and saves it; AppSkins.SKINS lists them for a picker. */
+(function(){var SKINS=[{"id":"minimal","name":"Modern Minimal","blurb":"Clean, airy and professional","scheme":"light","swatch":["#f6f7f9","#ffffff","#2f6fe4"],"bar":"#ffffff"},{"id":"elegant","name":"Dark Elegant","blurb":"Black and gold, refined","scheme":"dark","swatch":["#0d0c0a","#0d0c0a","#c9a24a"],"bar":"#0d0c0a"},{"id":"glass","name":"Glass","blurb":"Dusk gradient with frosted panels","scheme":"dark","swatch":["#3a2d6e","rgb(44 34 100 / .26)","#ffb48c"],"bar":"#3a2d6e"},{"id":"editorial","name":"Editorial","blurb":"Magazine serif, cream paper","scheme":"light","swatch":["#f6f0e4","#f6f0e4","#7d2e2e"],"bar":"#f6f0e4"},{"id":"impressionist","name":"Impressionist","blurb":"Painted riverside at golden hour","scheme":"light","swatch":["#e8d6b8","rgb(255 244 226 / .78)","#2f5d8a"],"bar":"#e8d6b8"},{"id":"playful","name":"Playful","blurb":"Cozy storybook, warm and friendly","scheme":"light","swatch":["#fbf3e6","#fbf3e6","#d9652c"],"bar":"#fbf3e6"},{"id":"pop","name":"Pop","blurb":"Bold comic red, black and cream","scheme":"light","swatch":["#c40000","#111111","#111111"],"bar":"#111111"}];var key='app-skin';
+function apply(id){var r=document.documentElement,s=SKINS.filter(function(x){return x.id===id})[0];
+if(!s){delete r.dataset.skin;r.style.removeProperty('color-scheme');return null}
+r.dataset.skin=s.id;r.style.colorScheme=s.scheme;var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',s.bar);return s}
+function get(){try{return localStorage.getItem(key)}catch(e){return null}}
+window.AppSkins={SKINS:SKINS,apply:apply,get:get,
+init:function(k){if(k)key=k;return apply(get())},
+set:function(id){try{id?localStorage.setItem(key,id):localStorage.removeItem(key)}catch(e){}var s=apply(id);try{window.dispatchEvent(new CustomEvent('appskin',{detail:id||null}))}catch(e){}return s}};})();
